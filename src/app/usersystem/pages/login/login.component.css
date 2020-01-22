@@ -1,0 +1,21 @@
+.boot-login-form {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.boot-login-form-forgot {
+    float: right;
+}
+
+.boot-login-form-button {
+    width: 100%;
+}
+
+.boot-login-body {
+    margin: 0 auto;
+}
+
+.boot-system-body {
+    text-align: center;
+    padding-top: 60px;
+}
