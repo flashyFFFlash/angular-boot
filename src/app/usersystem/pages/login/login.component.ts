@@ -2,6 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { HttpClient, HttpHeaders, HttpParameterCodec, HttpParams } from '@angular/common/http';
 import { NzMessageService } from 'ng-zorro-antd';
+import { RestService } from 'src/app/core/service/rest.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder, private http: HttpClient, @Inject('env') private environment,
-    private message: NzMessageService) {
+    private message: NzMessageService, private restService: RestService) {
     this.env = environment;
   }
 
@@ -26,9 +27,8 @@ export class LoginComponent implements OnInit {
       password: [null, [Validators.required]],
       remember: [true]
     });
+
   }
-
-
 
   submit() {
     console.log(this.form.value);
@@ -37,16 +37,7 @@ export class LoginComponent implements OnInit {
       password: this.form.get('password').value
     };
 
-    let body = new HttpParams({ encoder: new CustomHttpParameterEncoder() });
-    for (const key in params) {
-      if (params.hasOwnProperty(key)) {
-        const value = params[key];
-        body = body.append(key, value);
-      }
-    }
-    const postHeaders = new HttpHeaders()
-      .set('Content-Type', 'application/x-www-form-urlencoded');
-    this.http.post(this.env.contextPath + '/login', body.toString(), { headers: postHeaders }).toPromise().then((r: any) => {
+    this.restService.submitFormData('/login', params).then((r: any) => {
       if (r.code === 1) {
         this.message.info('登录成功');
       } else {
@@ -56,23 +47,18 @@ export class LoginComponent implements OnInit {
       console.error(e);
     });
 
+
+    this.testCreateUser();
   }
 
-}
-/**
- * 处理form表单提交时候的参数不能正确的编码，导致数据里有 ‘+’ 出现时会丢失，比如加密的密码传到后台就会报错
- */
-export class CustomHttpParameterEncoder implements HttpParameterCodec {
-  encodeKey(key: string): string {
-    return encodeURIComponent(key);
-  }
-  encodeValue(value: string): string {
-    return encodeURIComponent(value);
-  }
-  decodeKey(key: string): string {
-    return decodeURIComponent(key);
-  }
-  decodeValue(value: string): string {
-    return decodeURIComponent(value);
+  testCreateUser() {
+    this.restService.post('/user/create', {
+      username: 'zhangsan',
+    }).then(r => {
+      if (r.code === 1) {
+        console.log('创建成功');
+      }
+    });
+
   }
 }
